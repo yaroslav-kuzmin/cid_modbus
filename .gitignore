@@ -1,0 +1,7 @@
+*.o
+*.swp
+*.log
+*.ini
+*.exe
+*.a
+*.d
