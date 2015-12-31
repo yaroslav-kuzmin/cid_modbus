@@ -16,8 +16,11 @@
 #define SUCCESS          0
 #define FAILURE          1
 
+#define PROTOCOL_TCP     2
 #define PROTOCOL_RTU     1
 #define PROTOCOL_ASCII   0
+
+#define REGISTERS        0x100
 
 #endif
 

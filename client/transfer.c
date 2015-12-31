@@ -234,11 +234,11 @@ uint8_t * send_read_input_bits_device(int addr,int number)
 		size_tab_rp_bits = number;
 		tab_rp_bits = g_malloc0(size_tab_rp_bits*sizeof(uint8_t));
 	}
-/*	
+/*
 	else{
 		memset(tab_rp_bits,0,(size_tab_rp_bits* sizeof(uint8_t)));
 	}
-*/	
+*/
 	rc = modbus_read_input_bits(ctx,addr,number,tab_rp_bits);
 	if(rc == -1){
 		g_message("error read input bits");
@@ -264,11 +264,11 @@ uint16_t * send_read_registers_device(int addr,int number)
 		size_tab_rp_registers = number;
 		tab_rp_registers = g_malloc0(size_tab_rp_registers*sizeof(uint16_t));
 	}
-/*	
+/*
 	else{
 		memset(tab_rp_registers,0,(size_tab_rp_registers* sizeof(uint16_t)));
 	}
-*/	
+*/
 	rc = modbus_read_registers(ctx,addr,number,tab_rp_registers);
 	if(rc == -1){
 		g_message("error read registers");
@@ -291,11 +291,11 @@ uint16_t * send_read_input_registers_device(int addr,int number)
 		size_tab_rp_registers = number;
 		tab_rp_registers = g_malloc0(size_tab_rp_registers*sizeof(uint16_t));
 	}
-/*	
+/*
 	else{
 		memset(tab_rp_registers,0,(size_tab_rp_registers* sizeof(uint16_t)));
 	}
-*/	
+*/
 	rc = modbus_read_input_registers(ctx,addr,number,tab_rp_registers);
 	if(rc == -1){
 		g_message("error read input registers");
