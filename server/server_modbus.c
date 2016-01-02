@@ -243,7 +243,7 @@ int main(int argc,char * argv[])
 
 		rc = modbus_reply(ctx,query,rc,mb_mapping);
 		if (rc == -1) {
-			g_printf("Клиент закрыл соединение!\n\n");
+			g_printf(" Клиент закрыл соединение!\n\n");
 			break;
 		}
 	}
@@ -251,7 +251,7 @@ int main(int argc,char * argv[])
 	modbus_mapping_free(mb_mapping);
 	g_free(query);
 	modbus_free(ctx);
-	g_printf("\n Стоп сервера : ID %d\n\n",id_server);
+	g_printf(" Стоп сервера : ID %d\n\n",id_server);
 
 	return SUCCESS;
 }
