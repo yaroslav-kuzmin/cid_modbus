@@ -153,7 +153,7 @@ int connect_device(void)
 		return DISCONNECT;
 	}
 	if(protocol == PROTOCOL_ASCII){
-		ctx = modbus_new_ascii(device_name,baud,parity,data_bit,stop_bit);
+		ctx = modbus_new_rtu(device_name,baud,parity,data_bit,stop_bit);
 	}else{
 		ctx = modbus_new_rtu(device_name,baud,parity,data_bit,stop_bit);
 	}
