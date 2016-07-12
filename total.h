@@ -22,5 +22,7 @@
 
 #define REGISTERS        0x100
 
+typedef unsigned int    flag_t;
+
 #endif
 

@@ -206,6 +206,14 @@ uint16_t fire_alarm_state_count = 0;
 uint16_t work = 0x0100;
 uint16_t work_delay = 0;
 
+#define TEST_VERTICAL         FALSE
+#define TEST_HORIZONTAL       FALSE
+#define TEST_PRESSURE         FALSE
+#define TEST_VALVE            FALSE
+#define TEST_FIRE_ALARM       FALSE
+#define TEST_WORK             FALSE
+
+
 int set_value_registers(modbus_mapping_t * mb)
 {
  	/*
@@ -217,18 +225,26 @@ int set_value_registers(modbus_mapping_t * mb)
 /*****************************************************************************/
 
 	/*значение 0 - 30  (угол от 0 до 180 градусов) */
+#if TEST_VERTICAL
 	tic_vertical ++;
 	if( tic_vertical > 30){
 		tic_vertical = 0;
 	}
+#else
+	tic_vertical = 0;
+#endif
 	mb->tab_registers[re_tic_vertical] = tic_vertical;
 /*****************************************************************************/
 
 	/*значение 0 - 60 (угол от 0 до 360 грудусав)*/
+#if TEST_HORIZONTAL
 	tic_horizontal ++;
 	if( tic_horizontal > 60){
-		tic_horizontal =0;
+		tic_horizontal = 0;
 	}
+#else
+	tic_horizontal = 0;
+#endif
 	mb->tab_registers[re_tic_horizontal] = tic_horizontal;
 /*****************************************************************************/
 
@@ -240,6 +256,7 @@ int set_value_registers(modbus_mapping_t * mb)
 /*****************************************************************************/
 
 	/*значение 0-65535*/
+#if TEST_PRESSURE
 	switch(pressure){
 		case 0:
 			pressure = 1;
@@ -256,6 +273,9 @@ int set_value_registers(modbus_mapping_t * mb)
 		default:
 			pressure = 0;
 	}
+#else
+	pressure = 0;
+#endif
 	mb->tab_registers[re_pressure] = pressure;
 /*****************************************************************************/
 	/*значение 0-65535*/
@@ -264,6 +284,7 @@ int set_value_registers(modbus_mapping_t * mb)
 	/*значение 0-65535*/
 	mb->tab_registers[re_amperage_horizontal] = 6000;
 /*****************************************************************************/
+#if TEST_VALVE
 	valve_delay++;
 	if(valve_delay == 10){
 		valve_delay = 0;
@@ -293,6 +314,9 @@ int set_value_registers(modbus_mapping_t * mb)
 				valve = 0;
 		}
 	}
+#else
+	valve = 0;
+#endif
 	mb->tab_registers[re_valve] = valve;
 	/*значение 0-65535*/
 /*****************************************************************************/
@@ -303,6 +327,7 @@ int set_value_registers(modbus_mapping_t * mb)
 	бит 1 - датчик состояния "НЕИСПРАВНОСТЬ"*/
 	mb->tab_registers[re_sensor_fire_state] = 3;
 /*****************************************************************************/
+#if TEST_FIRE_ALARM
 	/*
 	0 - нет пожар
 	1 - пожар
@@ -318,10 +343,13 @@ int set_value_registers(modbus_mapping_t * mb)
 		}
 
 	}
+#else
+	fire_alarm_state = 0;
+#endif
 	/*0x1074*/
 	mb->tab_registers[re_fire_alarm_state] = fire_alarm_state;
 /*****************************************************************************/
-
+#if TEST_WORK
 	work_delay++;
 	if(work_delay == 20){
 		work_delay = 0;
@@ -415,12 +443,27 @@ int set_value_registers(modbus_mapping_t * mb)
 				work = 0x0100;
 		}
 	}
+#else
+	work = 0x0200;
+#endif
 	mb->tab_registers[re_work] = work;
 
 
 	return SUCCESS;
 }
 
+static flag_t		set_value(uint16_t * value,uint8_t q0,uint8_t q1)
+{
+	uint16_t temp = 0;
+
+	temp = q0;
+	temp <<= 8;
+ 	temp += q1;
+
+	*value = temp;
+
+	return SUCCESS;
+}
 int main(int argc,char * argv[])
 {
 	int rc;
@@ -429,6 +472,8 @@ int main(int argc,char * argv[])
 	modbus_t *ctx;
 	modbus_mapping_t *mb_mapping;
 	uint8_t * query;
+	uint16_t value;
+	uint32_t counter = 0;
 
 	if(argc != 2){
 		g_printf("Нет имени конфигурационного файла!\n\n");
@@ -465,11 +510,30 @@ int main(int argc,char * argv[])
 	modbus_tcp_accept(ctx, &socket);
 	g_printf(" Клиент подключился к серверу!\n");
 	for(;;){
+		counter ++;
 		rc = modbus_receive(ctx, query);
 		if(rc == -1){
 			g_printf("Клиент закрыл соединение!\n\n");
 			break;
 		}
+
+		fprintf(stdout,"%05d :> ",counter);
+#if 0
+		set_value(&value,query[0],query[1]);
+		fprintf(stdout,"[0x%04x] ",value);/*номер транзакции*/
+
+		set_value(&value,query[2],query[3]);
+		fprintf(stdout,"[0x%04x] ",value); /*номер протокола*/
+
+		set_value(&value,query[4],query[5]);
+		fprintf(stdout,"[0x%04x] ",value); /*длина пакета*/
+#endif
+
+		fprintf(stdout,"[0x%02x] ",query[6]); /*номер устройства*/
+		fprintf(stdout,"[0x%02x] ",query[7]); /*код функции*/
+
+		fprintf(stdout,"\n");
+		fflush(stdout);
 
 		set_value_registers(mb_mapping);
 
