@@ -16,9 +16,29 @@
 #include <total.h>
 
 
+/*************************************/
+char STR_GROUP_OPTIONS[] = "options";
+char STR_KEY_INPUT[] = "input";
+flag_t input = FALSE;
+/*************************************/
+char STR_GROUP_CONNETC[] = "connect";
+char STR_KEY_PORT[] = "port";
+char STR_KEY_ID[] = "ID";
+
 char ip_address[] = "127.0.0.1";
 uint16_t port = 1502;
 uint16_t id_server = 0;
+
+/*************************************/
+char STR_GROUP_REGISTERS[] = "registers";
+char STR_KEY_NAME_ROBOT[] = "name_robot";
+char STR_KEY_LITER_ROBOT[] = "liter_robot";
+char STR_KEY_LAFET[] = "lafet";
+char STR_KEY_SENSOR_FIRE[] = "sensor_fire";
+char STR_KEY_GATE[] = "gate";
+char STR_KEY_VIDEO[] = "video";
+char STR_KEY_FIRE_ALARM[] = "fire_alarm";
+char STR_KEY_DEVICE_ROBOT[] = "device_robot";
 
 uint16_t begin_registers = 0x1064;
 uint16_t amount_registers = 0x100;
@@ -57,20 +77,7 @@ uint16_t re_video                = 0x1131;
 uint16_t re_fire_alarm           = 0x1132;
 uint16_t re_device_robot         = 0x1133;
 
-char STR_GROUP_CONNETC[] = "connect";
-char STR_KEY_PORT[] = "port";
-char STR_KEY_ID[] = "ID";
-
-char STR_GROUP_REGISTERS[] = "registers";
-char STR_KEY_NAME_ROBOT[] = "name_robot";
-char STR_KEY_LITER_ROBOT[] = "liter_robot";
-char STR_KEY_LAFET[] = "lafet";
-char STR_KEY_SENSOR_FIRE[] = "sensor_fire";
-char STR_KEY_GATE[] = "gate";
-char STR_KEY_VIDEO[] = "video";
-char STR_KEY_FIRE_ALARM[] = "fire_alarm";
-char STR_KEY_DEVICE_ROBOT[] = "device_robot";
-
+/*************************************/
 int init_config(char * name,modbus_mapping_t * mb)
 {
 	int rc;
@@ -86,6 +93,20 @@ int init_config(char * name,modbus_mapping_t * mb)
 		return FAILURE;
 	}
 	g_printf("Файл конфигурации : %s\n",name);
+
+	error = NULL;
+	str = g_key_file_get_string(config,STR_GROUP_OPTIONS,STR_KEY_INPUT,&error);
+	if(error != NULL){
+		g_error_free(error);
+	}
+	rc = g_strcmp0(str,"true");
+ 	if(rc == 0){
+		input = TRUE;
+		g_printf("\tВывод сообщений\n");
+	}
+	else{
+		input = FALSE;
+	}
 
 	error = NULL;
 	port = g_key_file_get_integer(config,STR_GROUP_CONNETC,STR_KEY_PORT,&error);
@@ -452,7 +473,7 @@ int set_value_registers(modbus_mapping_t * mb)
 	return SUCCESS;
 }
 
-static flag_t		set_value(uint16_t * value,uint8_t q0,uint8_t q1)
+static flag_t	set_value(uint16_t * value,uint8_t q0,uint8_t q1)
 {
 	uint16_t temp = 0;
 
@@ -516,25 +537,36 @@ int main(int argc,char * argv[])
 			g_printf("Клиент закрыл соединение!\n\n");
 			break;
 		}
+		if(input == TRUE){
+			fprintf(stdout,"%05d :> ",counter);
+			/*set_value(&value,query[0],query[1]);*/
+			/*fprintf(stdout,"[0x%04x] ",value);[>номер транзакции<]*/
 
-		fprintf(stdout,"%05d :> ",counter);
-#if 0
-		set_value(&value,query[0],query[1]);
-		fprintf(stdout,"[0x%04x] ",value);/*номер транзакции*/
+			/*set_value(&value,query[2],query[3]);*/
+			/*fprintf(stdout,"[0x%04x] ",value); [>номер протокола<]*/
 
-		set_value(&value,query[2],query[3]);
-		fprintf(stdout,"[0x%04x] ",value); /*номер протокола*/
+			set_value(&value,query[4],query[5]);
+			/*fprintf(stdout,"[0x%04x] ",value); [>длина пакета<]*/
 
-		set_value(&value,query[4],query[5]);
-		fprintf(stdout,"[0x%04x] ",value); /*длина пакета*/
-#endif
-
-		fprintf(stdout,"[0x%02x] ",query[6]); /*номер устройства*/
-		fprintf(stdout,"[0x%02x] ",query[7]); /*код функции*/
-
-		fprintf(stdout,"\n");
-		fflush(stdout);
-
+			/*fprintf(stdout,"[0x%02x] ",query[6]); [>номер устройства<]*/
+			fprintf(stdout,"fun : 0x%02x ",query[7]); /*код функции*/
+			if(query[7] == 3){
+				/*если чтение состояния*/
+				set_value(&value,query[8],query[9]);
+				/*fprintf(stdout,"reg : 0x%04x ",value); */
+				set_value(&value,query[10],query[11]);
+				/*fprintf(stdout,"len : 0x%04x ",value); */
+			}
+			if(query[7] == 6){
+				set_value(&value,query[8],query[9]);
+				fprintf(stdout,"reg : 0x%04x ",value); /**/
+				set_value(&value,query[10],query[11]);
+				fprintf(stdout,"par : 0x%04x ",value); /**/
+			}
+			fprintf(stdout," ");
+			fprintf(stdout,"\n");
+			fflush(stdout);
+		}
 		set_value_registers(mb_mapping);
 
 		rc = modbus_reply(ctx,query,rc,mb_mapping);

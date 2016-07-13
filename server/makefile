@@ -24,7 +24,7 @@ CXX=gcc
 CFLAGS=-g2 -Wall -I.. -I. -I$(MODBUS_CATALOG) `pkg-config --cflags gtk+-3.0`
 LDFLAGS=-g2 -L$(MODBUS_CATALOG) 
 LIB=`pkg-config --libs gtk+-3.0` $(LIB_MODBUS_OPTION)
-LIB+=-lws2_32	
+#LIB+=-lws2_32	
 
 $(EXEC):$(OBJS) 
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LIB)
