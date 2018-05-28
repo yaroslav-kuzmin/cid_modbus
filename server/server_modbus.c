@@ -227,12 +227,12 @@ uint16_t fire_alarm_state_count = 0;
 uint16_t work = 0x0100;
 uint16_t work_delay = 0;
 
-#define TEST_VERTICAL         FALSE
+#define TEST_VERTICAL         TRUE
 #define TEST_HORIZONTAL       FALSE
 #define TEST_PRESSURE         FALSE
 #define TEST_VALVE            FALSE
 #define TEST_FIRE_ALARM       FALSE
-#define TEST_WORK             FALSE
+#define TEST_WORK             TRUE
 
 
 int set_value_registers(modbus_mapping_t * mb)
@@ -242,7 +242,7 @@ int set_value_registers(modbus_mapping_t * mb)
 	бит 1 - датчик положения "ВНИЗ"
 	бит 2 - датчик положения "ВЛЕВО"
 	бит 3 - датчик положения "ВПРАВО"*/
-	mb->tab_registers[re_state_lafet] = 0x000F;
+	mb->tab_registers[re_state_lafet] = 0x0001;
 /*****************************************************************************/
 
 	/*значение 0 - 30  (угол от 0 до 180 градусов) */
@@ -372,7 +372,7 @@ int set_value_registers(modbus_mapping_t * mb)
 /*****************************************************************************/
 #if TEST_WORK
 	work_delay++;
-	if(work_delay == 20){
+	if(work_delay == 30){
 		work_delay = 0;
 /*
 	 бит 0 - ошибка вертикальной оси
@@ -399,6 +399,10 @@ int set_value_registers(modbus_mapping_t * mb)
 				work = 0x0101;
 				break;
 			case 0x0101:
+				work = 0x0101;
+				break;
+#if 0
+			case 0x0101:
 				work = 0x0102;
 				break;
 			case 0x0102:
@@ -410,7 +414,6 @@ int set_value_registers(modbus_mapping_t * mb)
 			case 0x0108:
 				work = 0x0110;
 				break;
-#if 0
 			case 0x0110:
 				work = 0x011f;
 				break;
@@ -468,7 +471,6 @@ int set_value_registers(modbus_mapping_t * mb)
 	work = 0x0200;
 #endif
 	mb->tab_registers[re_work] = work;
-
 
 	return SUCCESS;
 }
